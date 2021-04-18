@@ -1,0 +1,22 @@
+[package]
+name = "rice"
+version = "0.0.1"
+authors = ["Jorge Gonzalez <jorgegonzalez@users.noreply.github.com>"]
+edition = "2018"
+include = [
+	"src/**/*",
+	"Cargo.toml",
+	"README.md"
+]
+repository = "https://github.com/jorgegonzalez/rice"
+documentation = "https://github.com/jorgegonzalez/rice"
+homepage = "https://github.com/jorgegonzalez/rice"
+readme = "README.md"
+license = "MIT"
+description = "A simple system information script"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "2.33.0"
+sys-info = "0.5.8"
+
