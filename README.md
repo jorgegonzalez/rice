@@ -7,8 +7,8 @@ A modern, feature-rich system information tool written in Rust.
 - **System Information**: OS details, hostname, kernel version, CPU count, memory, and uptime
 - **CPU Monitoring**: Per-core CPU usage, frequency, and brand information
 - **Memory Analysis**: Total, used, and available memory with visual usage bars
-- **Disk Information**: Mount points, filesystem types, and space usage (limited in current sysinfo version)
-- **Network Statistics**: Interface statistics and data transfer metrics (limited in current sysinfo version)
+- **Disk Information**: Mount points, filesystem types, space usage, and visual usage bars
+- **Network Statistics**: Interface statistics, data transfer metrics, and error reporting
 - **Multiple Output Formats**: Human-readable text and machine-readable JSON
 - **Colored Output**: Beautiful terminal output with color coding
 - **Structured Logging**: Built-in logging with configurable verbosity
@@ -26,7 +26,7 @@ cargo install --path .
 
 ### Requirements
 
-- Rust 1.70+ (2021 edition)
+- Rust 1.88+ (2021 edition)
 - macOS, Linux, or Windows
 
 ## Usage
@@ -58,15 +58,15 @@ rice --format json
 rice system
 
 # Get CPU information in JSON format
-rice cpu --format json
+rice --format json cpu
 
 # Get memory usage with verbose logging
 rice memory --verbose
 
-# Get disk information
+# Get disk information with usage bars
 rice disk
 
-# Get network statistics
+# Get network statistics for all interfaces
 rice network
 ```
 
@@ -95,7 +95,7 @@ COMMANDS:
 
 ### Text Format (Default)
 
-Beautiful, colored terminal output with organized sections and visual elements like memory usage bars.
+Beautiful, colored terminal output with organized sections and visual elements like memory and disk usage bars.
 
 ### JSON Format
 
@@ -109,7 +109,10 @@ Machine-readable output perfect for scripting and automation:
   "kernel_version": "23.0.0",
   "cpu_count": 8,
   "total_memory": 17179869184,
-  "uptime": 3600
+  "uptime": 3600,
+  "cpu_brand": "Apple M1",
+  "cpu_frequency": 3204,
+  "memory_usage_percent": 69.89
 }
 ```
 
@@ -137,21 +140,31 @@ cargo run -- --help
 
 ## Dependencies
 
-- **clap**: Modern command-line argument parsing (v4 with derive features)
-- **sysinfo**: Cross-platform system information gathering (v0.30)
+- **clap**: Modern command-line argument parsing (v4.5 with derive features)
+- **sysinfo**: Cross-platform system information gathering (v0.37)
 - **anyhow**: Error handling
 - **serde**: Serialization for JSON output
-- **colored**: Terminal color support
+- **colored**: Terminal color support (v3.0)
 - **tracing**: Structured logging
 
-## Current Limitations
+## Enhanced Features
 
-Due to API changes in the `sysinfo` crate v0.30, some features are currently limited:
+### Disk Information
+- Complete disk space monitoring with usage percentages
+- Visual usage bars for easy interpretation
+- Support for multiple filesystem types
+- Removable device detection
 
-- Disk information display is not fully implemented
-- Network statistics are not fully implemented
+### Network Monitoring
+- Comprehensive interface statistics
+- Data transfer metrics (received/transmitted)
+- Packet counting and error reporting
+- Support for all network interface types
 
-These features will be restored in future updates as the sysinfo API stabilizes.
+### System Information
+- Enhanced CPU information including brand and frequency
+- Memory usage percentage calculation
+- Comprehensive system overview
 
 ## License
 
