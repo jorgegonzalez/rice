@@ -1,5 +1,7 @@
 # Rice 🍚
 
+[![Crates.io Version](https://img.shields.io/crates/v/rice?style=flat&logo=Rust&link=https%3A%2F%2Fcrates.io%2Fcrates%2Frice)](https://crates.io/crates/rice)
+
 A modern, feature-rich system information tool written in Rust.
 
 ## Features
@@ -150,18 +152,21 @@ cargo run -- --help
 ## Enhanced Features
 
 ### Disk Information
+
 - Complete disk space monitoring with usage percentages
 - Visual usage bars for easy interpretation
 - Support for multiple filesystem types
 - Removable device detection
 
 ### Network Monitoring
+
 - Comprehensive interface statistics
 - Data transfer metrics (received/transmitted)
 - Packet counting and error reporting
 - Support for all network interface types
 
 ### System Information
+
 - Enhanced CPU information including brand and frequency
 - Memory usage percentage calculation
 - Comprehensive system overview
