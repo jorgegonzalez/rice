@@ -238,7 +238,7 @@ pub fn get_window_manager() -> Result<String> {
         }
 
         // Default to Quartz Compositor if no other window manager is detected
-        return Ok("Quartz Compositor".to_string());
+        Ok("Quartz Compositor".to_string())
     }
 
     #[cfg(not(target_os = "macos"))]
