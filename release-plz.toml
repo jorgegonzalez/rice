@@ -1,0 +1,12 @@
+[workspace]
+# Git configuration
+git_release_enable = true
+git_tag_enable = true
+
+# Release configuration
+release_always = true
+
+[[package]]
+name = "rice"
+# Don't publish to crates.io automatically
+publish = false

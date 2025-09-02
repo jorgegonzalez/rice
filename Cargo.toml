@@ -14,6 +14,9 @@ homepage = "https://github.com/jorgegonzalez/rice"
 readme = "README.md"
 license = "MIT"
 description = "🍚 A modern, feature-rich system information tool written in Rust"
+keywords = ["system", "info", "neofetch", "cli", "terminal"]
+categories = ["command-line-utilities"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
