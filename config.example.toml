@@ -1,0 +1,77 @@
+# Rice Configuration Example
+# Copy this to ~/.config/rice/config.toml (Linux/macOS) or %APPDATA%/rice/config.toml (Windows)
+
+[display]
+# Show ASCII art logo (true/false)
+show_logo = true
+# Use different colors for each field value (true/false)
+color_values = true
+# Show "Colors:" label before color blocks (true/false)
+show_colors_label = false
+
+[info]
+# Fields to display and their order
+# Available fields: os, hostname, kernel, uptime, packages, shell, resolution, de, wm, terminal, cpu, memory, disk, colors
+fields = [
+    "os",
+    "hostname", 
+    "kernel",
+    "uptime",
+    "packages",
+    "shell",
+    "resolution",
+    "de",
+    "wm", 
+    "terminal",
+    "cpu",
+    "memory",
+    "disk",
+    "colors"
+]
+
+# Custom commands to execute and display
+# Each command will be executed and its output displayed as a field
+[info.custom_commands]
+# Example custom commands (uncomment to use):
+# git_branch = "git branch --show-current"
+# current_time = "date '+%H:%M:%S'"
+# weather = "curl -s 'wttr.in?format=%l:+%c+%t'"
+# public_ip = "curl -s ifconfig.me"
+# disk_usage = "df -h / | tail -1 | awk '{print $5}'"
+
+
+[ascii_art]
+# How to get ASCII art: "auto" (detect OS), "builtin", "file", or "none"
+source = "auto"
+# Auto-detect OS for appropriate logo
+auto_detect = false
+# Custom ASCII art file path (experimental - use --image flag for now)
+# path = "/path/to/custom/ascii/art.txt"
+# Force specific built-in logo (working)
+# builtin = "arch"
+
+# ===== WORKING EXAMPLES =====
+
+# Minimal Example (no ASCII art):
+# [display]
+# show_logo = false
+# 
+# [info]
+# fields = ["hostname", "os", "cpu", "memory"]
+
+# Custom Field Order:
+# [info]
+# fields = [
+#     "hostname",
+#     "os",
+#     "kernel", 
+#     "uptime",
+#     "cpu",
+#     "memory",
+#     "disk"
+# ]
+
+# Enable Auto-Detection:
+# [ascii_art]
+# source = "auto"
+# auto_detect = true

@@ -1,13 +1,21 @@
 use clap::{Parser, Subcommand};
-use colored::*;
-use sysinfo::{System, Disks, Networks};
 use anyhow::{Result, Context};
 use serde::Serialize;
-use tracing::{info, Level};
+use tracing::Level;
+use colored::Colorize;
+
+mod config;
+mod display;
+mod info;
+mod utils;
+
+use config::Config;
+use display::Display;
+use info::InfoCollector;
 
 #[derive(Parser)]
 #[command(name = "rice")]
-#[command(about = "A modern system information tool")]
+#[command(about = "A modern, configurable system information tool")]
 #[command(version)]
 #[command(propagate_version = true)]
 struct Cli {
@@ -21,34 +29,70 @@ struct Cli {
     /// Enable verbose logging
     #[arg(short, long)]
     verbose: bool,
+
+    /// Use custom config file
+    #[arg(short, long)]
+    config: Option<String>,
+
+    /// Disable ASCII art/logo
+    #[arg(long)]
+    no_logo: bool,
+
+    /// Path to image file to display instead of ASCII art
+    #[arg(long)]
+    image: Option<String>,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Show system information
+    /// Show system information (default)
+    Show,
+    /// Generate default config file
+    Config,
+    /// Show system information (legacy)
     System,
-    /// Show CPU information
+    /// Show CPU information (legacy) 
     Cpu,
-    /// Show memory information
+    /// Show memory information (legacy)
     Memory,
-    /// Show disk information
+    /// Show disk information (legacy)
     Disk,
-    /// Show network information
+    /// Show network information (legacy)
     Network,
 }
 
-#[derive(Serialize)]
-struct SystemInfo {
-    os_name: String,
-    os_version: String,
-    hostname: String,
-    kernel_version: String,
-    cpu_count: usize,
-    total_memory: u64,
-    uptime: u64,
-    cpu_brand: String,
-    cpu_frequency: u64,
-    memory_usage_percent: f64,
+
+
+fn get_random_startup_message() -> &'static str {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    use std::time::{SystemTime, UNIX_EPOCH};
+    
+    let messages = [
+        "Scanning system information",
+        "Gathering hardware details", 
+        "Collecting software inventory",
+        "Analyzing system performance",
+        "Reading configuration files",
+        "Preparing display output",
+        "Initializing system probe",
+        "Loading hardware drivers",
+        "Calibrating sensors",
+        "Establishing system baseline",
+    ];
+    
+    // Create a pseudo-random seed from current time
+    let seed = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    
+    let mut hasher = DefaultHasher::new();
+    seed.hash(&mut hasher);
+    let hash = hasher.finish();
+    
+    let index = (hash as usize) % messages.len();
+    messages[index]
 }
 
 fn main() -> Result<()> {
@@ -60,8 +104,74 @@ fn main() -> Result<()> {
         .with_max_level(level)
         .init();
 
-    info!("Starting rice system information tool");
+    // Add the random startup message as an info log
+    tracing::info!("{}", get_random_startup_message());
 
+    match cli.command {
+        Some(Commands::Config) => {
+            generate_config()?;
+            return Ok(());
+        },
+        Some(Commands::System) | Some(Commands::Cpu) | Some(Commands::Memory) | 
+        Some(Commands::Disk) | Some(Commands::Network) => {
+            // Legacy mode - use old implementation for compatibility
+            run_legacy_mode(&cli)?;
+            return Ok(());
+        },
+        Some(Commands::Show) | None => {
+            // New modular mode
+            run_modern_mode(&cli)?
+        },
+    }
+
+    Ok(())
+}
+
+fn run_modern_mode(cli: &Cli) -> Result<()> {
+    // Load configuration
+    let mut config = Config::load_from_path(cli.config.clone())?;
+    
+    // Override config with CLI options
+    if cli.no_logo {
+        config.display.show_logo = false;
+    }
+    
+    if let Some(image_path) = &cli.image {
+        config.ascii_art.source = crate::config::AsciiArtSource::Image;
+        config.ascii_art.path = Some(image_path.clone());
+    }
+    
+    // Create info collector
+    let collector = InfoCollector::new(
+        config.info.fields.clone(),
+        config.info.custom_commands.clone(),
+    );
+    
+    // Collect system information
+    let info = collector.collect_all()?;
+    
+    // Handle different output formats
+    match cli.format.as_str() {
+        "json" => {
+            let json = serde_json::to_string_pretty(&info)
+                .context("Failed to serialize info to JSON")?;
+            println!("{}", json);
+        },
+        _ => {
+            // Use display engine for formatted output
+            let display = Display::new(config);
+            let output = display.render(&info)?;
+            println!("{}", output);
+        }
+    }
+    
+    Ok(())
+}
+
+fn run_legacy_mode(cli: &Cli) -> Result<()> {
+    // Keep the old implementation for backward compatibility
+    use sysinfo::System;
+    
     let mut sys = System::new_all();
     sys.refresh_all();
 
@@ -71,13 +181,104 @@ fn main() -> Result<()> {
         Some(Commands::Memory) => show_memory_info(&sys, &cli.format)?,
         Some(Commands::Disk) => show_disk_info(&sys, &cli.format)?,
         Some(Commands::Network) => show_network_info(&sys, &cli.format)?,
-        None => show_system_info(&sys, &cli.format)?,
+        _ => unreachable!(),
     }
-
+    
     Ok(())
 }
 
-fn show_system_info(sys: &System, format: &str) -> Result<()> {
+fn generate_config() -> Result<()> {
+    let config_path = crate::config::loader::get_config_path()?;
+    let mut created = false;
+    
+    if config_path.exists() {
+        println!("Config file already exists at: {}", config_path.display());
+    } else {
+        std::fs::write(&config_path, crate::config::defaults::default_config_toml())
+            .with_context(|| format!("Failed to create config file: {}", config_path.display()))?;
+        println!("Created default config file at: {}", config_path.display());
+        created = true;
+    }
+    
+    // Open config file in default editor
+    println!("Opening config file in default editor...");
+    if let Err(e) = open_in_editor(&config_path) {
+        println!("Failed to open editor: {}", e);
+        if created {
+            println!("You can manually edit the config file at: {}", config_path.display());
+        }
+    }
+    
+    Ok(())
+}
+
+fn open_in_editor(path: &std::path::Path) -> Result<()> {
+    use std::process::Command;
+    
+    // Try different editors based on platform and environment
+    let editors = if cfg!(windows) {
+        vec!["notepad"]
+    } else if cfg!(target_os = "macos") {
+        vec!["open", "code", "nano", "vim"]
+    } else {
+        vec!["xdg-open", "code", "gedit", "nano", "vim"]
+    };
+    
+    // Check EDITOR environment variable first
+    if let Ok(editor) = std::env::var("EDITOR") {
+        let status = Command::new(&editor)
+            .arg(path)
+            .status()
+            .with_context(|| format!("Failed to run editor: {}", editor))?;
+        
+        if status.success() {
+            return Ok(());
+        }
+    }
+    
+    // Check VISUAL environment variable
+    if let Ok(editor) = std::env::var("VISUAL") {
+        let status = Command::new(&editor)
+            .arg(path)
+            .status()
+            .with_context(|| format!("Failed to run editor: {}", editor))?;
+        
+        if status.success() {
+            return Ok(());
+        }
+    }
+    
+    // Try default editors for the platform
+    for editor in editors {
+        if let Ok(status) = Command::new(editor).arg(path).status() {
+            if status.success() {
+                return Ok(());
+            }
+        }
+    }
+    
+    anyhow::bail!("No suitable editor found. Please set EDITOR or VISUAL environment variable.")
+}
+
+// Legacy system info display for backward compatibility
+fn show_system_info(sys: &sysinfo::System, format: &str) -> Result<()> {
+    use sysinfo::System;
+    use colored::*;
+    
+    #[derive(Serialize)]
+    struct SystemInfo {
+        os_name: String,
+        os_version: String,
+        hostname: String,
+        kernel_version: String,
+        cpu_count: usize,
+        total_memory: u64,
+        uptime: u64,
+        cpu_brand: String,
+        cpu_frequency: u64,
+        memory_usage_percent: f64,
+    }
+    
     let cpus = sys.cpus();
     let cpu_brand = if !cpus.is_empty() { cpus[0].brand().to_string() } else { "Unknown".to_string() };
     let cpu_frequency = if !cpus.is_empty() { cpus[0].frequency() } else { 0 };
@@ -120,7 +321,7 @@ fn show_system_info(sys: &System, format: &str) -> Result<()> {
     Ok(())
 }
 
-fn show_cpu_info(sys: &System, format: &str) -> Result<()> {
+fn show_cpu_info(sys: &sysinfo::System, format: &str) -> Result<()> {
     let cpus = sys.cpus();
 
     if format == "json" {
@@ -151,7 +352,7 @@ fn show_cpu_info(sys: &System, format: &str) -> Result<()> {
     Ok(())
 }
 
-fn show_memory_info(sys: &System, format: &str) -> Result<()> {
+fn show_memory_info(sys: &sysinfo::System, format: &str) -> Result<()> {
     let total = sys.total_memory();
     let used = sys.used_memory();
     let available = sys.available_memory();
@@ -185,7 +386,8 @@ fn show_memory_info(sys: &System, format: &str) -> Result<()> {
     Ok(())
 }
 
-fn show_disk_info(_sys: &System, format: &str) -> Result<()> {
+fn show_disk_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
+    use sysinfo::Disks;
     // Try to access disk information through the new API
     let disks = Disks::new_with_refreshed_list();
 
@@ -236,7 +438,8 @@ fn show_disk_info(_sys: &System, format: &str) -> Result<()> {
     Ok(())
 }
 
-fn show_network_info(_sys: &System, format: &str) -> Result<()> {
+fn show_network_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
+    use sysinfo::Networks;
     // Try to access network information through the new API
     let networks = Networks::new_with_refreshed_list();
 

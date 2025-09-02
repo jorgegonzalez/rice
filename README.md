@@ -1,21 +1,17 @@
-# Rice 🍚
+# Rice
 
-[![Crates.io Version](https://img.shields.io/crates/v/rice?style=flat&logo=Rust&link=https%3A%2F%2Fcrates.io%2Fcrates%2Frice)](https://crates.io/crates/rice)
+[![Crates.io Version](https://img.shields.io/crates/v/rice?style=flat&logo=Rust&logoColor=white&color=orange)](https://crates.io/crates/rice)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
 
-A modern, feature-rich system information tool written in Rust.
-
-## Features
-
-- **System Information**: OS details, hostname, kernel version, CPU count, memory, and uptime
-- **CPU Monitoring**: Per-core CPU usage, frequency, and brand information
-- **Memory Analysis**: Total, used, and available memory with visual usage bars
-- **Disk Information**: Mount points, filesystem types, space usage, and visual usage bars
-- **Network Statistics**: Interface statistics, data transfer metrics, and error reporting
-- **Multiple Output Formats**: Human-readable text and machine-readable JSON
-- **Colored Output**: Beautiful terminal output with color coding
-- **Structured Logging**: Built-in logging with configurable verbosity
+🍚 A modern, feature-rich system information tool written in Rust
 
 ## Installation
+
+### From Crates.io (Recommended)
+
+```bash
+cargo install rice
+```
 
 ### From Source
 
@@ -28,23 +24,41 @@ cargo install --path .
 
 ### Requirements
 
-- Rust 1.88+ (2021 edition)
-- macOS, Linux, or Windows
+- **Rust 1.88+** (2021 edition)
+- **Platform**: macOS, Linux, or Windows
 
 ## Usage
 
-### Basic Commands
+### Quick Start
 
 ```bash
-# Show general system information
+# Default output with ASCII art and system info
 rice
 
-# Show specific information categories
-rice system
-rice cpu
-rice memory
-rice disk
-rice network
+# Use custom image (iTerm2/Kitty)  
+rice --image ~/Pictures/wallpaper.png
+
+# Generate config file
+rice config
+```
+
+### Command Reference
+
+<details>
+<summary><strong>Core Commands</strong></summary>
+
+```bash
+# Show system information (neofetch-style with ASCII art)
+rice
+
+# Show system info without ASCII art  
+rice --no-logo
+
+# Show system info with custom image (iTerm2/Kitty)
+rice --image ~/Pictures/logo.png
+
+# Generate config file and open in editor
+rice config
 
 # Enable verbose logging
 rice --verbose
@@ -53,68 +67,104 @@ rice --verbose
 rice --format json
 ```
 
+</details>
+
+<details>
+<summary><strong>Subcommands</strong></summary>
+
+```bash
+rice system    # System overview
+rice cpu        # CPU information  
+rice memory     # Memory usage
+rice disk       # Disk usage
+rice network    # Network info
+```
+
+</details>
+
 ### Examples
 
 ```bash
-# Get system overview with colored output
-rice system
+# Default output
+rice
 
-# Get CPU information in JSON format
-rice --format json cpu
+# With custom image
+rice --image ~/Pictures/sunset.jpg
 
-# Get memory usage with verbose logging
-rice memory --verbose
+# Without ASCII art
+rice --no-logo
 
-# Get disk information with usage bars
-rice disk
+# JSON output
+rice --format json | jq '.'
 
-# Get network statistics for all interfaces
-rice network
+# Edit configuration
+rice config
 ```
 
-### Command Line Options
+## Configuration
 
-```
-USAGE:
-    rice [OPTIONS] [COMMAND]
+Rice uses TOML configuration files.
 
-OPTIONS:
-    -f, --format <FORMAT>    Output format (text, json) [default: text]
-    -h, --help               Print help
-    -v, --verbose            Enable verbose logging
-    -V, --version            Print version
-
-COMMANDS:
-    system     Show system information
-    cpu        Show CPU information
-    memory     Show memory information
-    disk       Show disk information
-    network    Show network information
-    help       Print this message or the help of the given subcommand(s)
+```bash
+rice config
 ```
 
-## Output Formats
+### Config Locations
+- **Linux/macOS**: `~/.config/rice/config.toml` 
+- **Windows**: `%APPDATA%/rice/config.toml`
 
-### Text Format (Default)
+### Available Options
+- Toggle ASCII art on/off
+- Choose which system info to display  
+- Force specific OS logos
+- Add custom commands
+- Customize colors and themes
 
-Beautiful, colored terminal output with organized sections and visual elements like memory and disk usage bars.
+See [config.example.toml](config.example.toml) for all available options.
+
+### Custom Commands
+
+Add custom shell commands to display additional information:
+
+```toml
+[info.custom_commands]
+git_branch = "git branch --show-current"
+current_time = "date '+%H:%M:%S'"
+weather = "curl -s 'wttr.in?format=%l:+%c+%t'"
+public_ip = "curl -s ifconfig.me"
+uptime_fancy = "uptime | sed 's/.*up //'"
+battery = "pmset -g batt | grep -o '[0-9]*%'"
+```
+
+Commands run when Rice executes. Failed or slow commands are skipped. Output limited to 100 characters.
 
 ### JSON Format
 
-Machine-readable output perfect for scripting and automation:
+Machine-readable output for scripting and automation:
+
+```bash
+rice --format json
+```
 
 ```json
 {
-  "os_name": "macOS",
-  "os_version": "14.0",
-  "hostname": "macbook-pro",
-  "kernel_version": "23.0.0",
-  "cpu_count": 8,
-  "total_memory": 17179869184,
-  "uptime": 3600,
-  "cpu_brand": "Apple M1",
-  "cpu_frequency": 3204,
-  "memory_usage_percent": 69.89
+  "os": "Darwin 15.6.1",
+  "host": "MacBookAir", 
+  "kernel": "24.6.0",
+  "uptime": "11d 15h 10m",
+  "packages": "52 (brew)",
+  "shell": "zsh 5.9",
+  "cpu": "Apple M1 (8 cores) @ 3204 MHz",
+  "memory": {
+    "used": 12624,
+    "total": 16384,
+    "percentage": 77.1
+  },
+  "disk": {
+    "used": 538,
+    "total": 920,
+    "percentage": 58.5
+  }
 }
 ```
 
@@ -140,40 +190,9 @@ cargo run
 cargo run -- --help
 ```
 
-## Dependencies
-
-- **clap**: Modern command-line argument parsing (v4.5 with derive features)
-- **sysinfo**: Cross-platform system information gathering (v0.37)
-- **anyhow**: Error handling
-- **serde**: Serialization for JSON output
-- **colored**: Terminal color support (v3.0)
-- **tracing**: Structured logging
-
-## Enhanced Features
-
-### Disk Information
-
-- Complete disk space monitoring with usage percentages
-- Visual usage bars for easy interpretation
-- Support for multiple filesystem types
-- Removable device detection
-
-### Network Monitoring
-
-- Comprehensive interface statistics
-- Data transfer metrics (received/transmitted)
-- Packet counting and error reporting
-- Support for all network interface types
-
-### System Information
-
-- Enhanced CPU information including brand and frequency
-- Memory usage percentage calculation
-- Comprehensive system overview
-
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](./LICENSE) file for details.
 
 ## Contributing
 

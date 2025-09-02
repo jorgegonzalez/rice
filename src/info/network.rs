@@ -1,0 +1,1 @@
+// This file is kept for future network info functionality but currently unused
