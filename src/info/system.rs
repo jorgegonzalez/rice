@@ -1,14 +1,38 @@
 use anyhow::Result;
 use std::env;
+use std::process::Command;
 use sysinfo::System;
 
 pub fn get_os_info() -> Result<String> {
     let name = System::name().unwrap_or_else(|| "Unknown".to_string());
     let version = System::os_version().unwrap_or_else(|| "Unknown".to_string());
-    Ok(format!("{} {}", name, version))
+    
+    // Map Darwin to macOS for better user experience
+    let display_name = match name.as_str() {
+        "Darwin" => "macOS",
+        _ => &name,
+    };
+    
+    Ok(format!("{} {}", display_name, version))
 }
 
 pub fn get_hostname() -> Result<String> {
+    #[cfg(target_os = "macos")]
+    {
+        // On macOS, try to get the specific model identifier like neofetch does
+        if let Ok(output) = Command::new("sysctl")
+            .arg("-n")
+            .arg("hw.model")
+            .output()
+        {
+            let model = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !model.is_empty() {
+                return Ok(model);
+            }
+        }
+    }
+    
+    // Fallback to regular hostname
     Ok(System::host_name().unwrap_or_else(|| "Unknown".to_string()))
 }
 

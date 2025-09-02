@@ -176,6 +176,7 @@ fn get_field_label(field: &str) -> String {
         "de" => "DE".to_string(),
         "wm" => "WM".to_string(),
         "terminal" => "Terminal".to_string(),
+        "terminal_font" => "Terminal Font".to_string(),
         "cpu" => "CPU".to_string(),
         "memory" => "Memory".to_string(),
         "disk" => "Disk".to_string(),

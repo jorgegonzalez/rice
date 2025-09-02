@@ -81,6 +81,7 @@ impl InfoCollector {
             "disk" => hardware::get_disk_info(),
             "shell" => software::get_shell_info(),
             "terminal" => software::get_terminal_info(),
+            "terminal_font" => software::get_terminal_font(),
             "packages" => software::get_package_count(),
             "resolution" => software::get_resolution(),
             "de" => software::get_desktop_environment(),

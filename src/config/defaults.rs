@@ -15,6 +15,7 @@ impl Default for DisplayConfig {
         field_colors.insert("de".to_string(), "cyan".to_string());
         field_colors.insert("wm".to_string(), "bright_green".to_string());
         field_colors.insert("terminal".to_string(), "yellow".to_string());
+        field_colors.insert("terminal_font".to_string(), "bright_yellow".to_string());
         field_colors.insert("cpu".to_string(), "bright_green".to_string());
         field_colors.insert("memory".to_string(), "bright_blue".to_string());
         field_colors.insert("disk".to_string(), "bright_red".to_string());
@@ -43,6 +44,7 @@ impl Default for InfoConfig {
             "de".to_string(),
             "wm".to_string(),
             "terminal".to_string(),
+            "terminal_font".to_string(),
             "cpu".to_string(),
             "memory".to_string(),
             "disk".to_string(),
