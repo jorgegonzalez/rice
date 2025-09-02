@@ -125,12 +125,14 @@ rice config
 ```
 
 ### Config Locations
-- **Linux/macOS**: `~/.config/rice/config.toml` 
+
+- **Linux/macOS**: `~/.config/rice/config.toml`
 - **Windows**: `%APPDATA%/rice/config.toml`
 
 ### Available Options
+
 - Toggle ASCII art on/off
-- Choose which system info to display  
+- Choose which system info to display
 - Force specific OS logos
 - Add custom commands
 - Customize colors and themes
@@ -164,7 +166,7 @@ rice --format json
 ```json
 {
   "os": "Darwin 15.6.1",
-  "host": "MacBookAir", 
+  "host": "MacBookAir",
   "kernel": "24.6.0",
   "uptime": "11d 15h 10m",
   "packages": "52 (brew)",
@@ -212,3 +214,7 @@ MIT License - see [LICENSE](./LICENSE) file for details.
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Prior Art
+
+- [neofetch](https://github.com/dylanaraps/neofetch)
