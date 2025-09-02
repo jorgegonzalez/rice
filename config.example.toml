@@ -44,7 +44,7 @@ fields = [
 # How to get ASCII art: "auto" (detect OS), "builtin", "file", or "none"
 source = "auto"
 # Auto-detect OS for appropriate logo
-auto_detect = false
+auto_detect = true
 # Custom ASCII art file path (experimental - use --image flag for now)
 # path = "/path/to/custom/ascii/art.txt"
 # Force specific built-in logo (working)

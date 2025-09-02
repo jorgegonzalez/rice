@@ -66,7 +66,7 @@ impl Default for AsciiArtConfig {
             source: AsciiArtSource::Auto,
             path: None,
             builtin: None,
-            auto_detect: false,
+            auto_detect: true,
         }
     }
 }
@@ -142,7 +142,7 @@ fields = [
 source = "auto"
 
 # Auto-detect OS for ASCII art selection (currently not implemented)
-auto_detect = false
+auto_detect = true
 
 # Path to custom ASCII art file or image file
 # path = "/path/to/custom/ascii/art.txt"
