@@ -23,6 +23,7 @@ impl Default for DisplayConfig {
             show_logo: true,
             color_values: true,
             show_colors_label: false,
+            disable_startup_message: true,
             field_colors,
         }
     }
@@ -80,6 +81,9 @@ color_values = true
 
 # Show "Colors:" label for the colored blocks row (if false, shows blocks without label)
 show_colors_label = false
+
+# Disable the random startup message in logs (default: true)
+disable_startup_message = true
 
 # Customize colors for individual field values
 # Available colors: black, red, green, yellow, blue, magenta, cyan, white

@@ -16,6 +16,7 @@ pub struct DisplayConfig {
     pub show_logo: bool,
     pub color_values: bool,
     pub show_colors_label: bool,
+    pub disable_startup_message: bool,
     pub field_colors: HashMap<String, String>,
 }
 

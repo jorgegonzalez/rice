@@ -107,6 +107,9 @@ fn main() -> Result<()> {
     
     let cli = Cli::parse();
 
+    // Load configuration early to check startup message setting
+    let config = Config::load_from_path(cli.config.clone())?;
+
     // Initialize logging
     let level = if cli.verbose {
         Level::DEBUG
@@ -115,8 +118,10 @@ fn main() -> Result<()> {
     };
     tracing_subscriber::fmt().with_max_level(level).init();
 
-    // Add the random startup message as an info log
-    tracing::info!("{}", get_random_startup_message());
+    // Add the random startup message as an info log (if not disabled)
+    if !config.display.disable_startup_message {
+        tracing::info!("{}", get_random_startup_message());
+    }
 
     match cli.command {
         Some(Commands::Config) => {
