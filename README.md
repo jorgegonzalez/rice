@@ -5,6 +5,8 @@
 
 🍚 A modern, feature-rich system information tool written in Rust
 
+![demo.png](/demo.png)
+
 ## Installation
 
 ### From Crates.io (Recommended)
