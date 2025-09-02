@@ -4,7 +4,7 @@ use std::process::Command;
 
 pub fn get_shell_info() -> Result<String> {
     if let Ok(shell) = env::var("SHELL") {
-        if let Some(shell_name) = shell.split('/').last() {
+        if let Some(shell_name) = shell.split('/').next_back() {
             // Try to get version
             if let Ok(output) = Command::new(shell_name).arg("--version").output() {
                 let version_output = String::from_utf8_lossy(&output.stdout);
@@ -41,7 +41,7 @@ pub fn get_terminal_info() -> Result<String> {
     #[cfg(target_os = "macos")]
     {
         if let Ok(output) = Command::new("ps")
-            .args(&["-o", "comm=", "-p", &std::process::id().to_string()])
+            .args(["-o", "comm=", "-p", &std::process::id().to_string()])
             .output()
         {
             let parent_process = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -60,7 +60,7 @@ pub fn get_package_count() -> Result<String> {
     #[cfg(target_os = "macos")]
     {
         // Try Homebrew
-        if let Ok(output) = Command::new("brew").args(&["list", "--formula"]).output() {
+        if let Ok(output) = Command::new("brew").args(["list", "--formula"]).output() {
             let count = String::from_utf8_lossy(&output.stdout).lines().count();
             if count > 0 {
                 return Ok(format!("{} (brew)", count));
@@ -68,7 +68,7 @@ pub fn get_package_count() -> Result<String> {
         }
 
         // Try MacPorts
-        if let Ok(output) = Command::new("port").args(&["installed"]).output() {
+        if let Ok(output) = Command::new("port").args(["installed"]).output() {
             let count = String::from_utf8_lossy(&output.stdout)
                 .lines()
                 .count()
@@ -82,7 +82,7 @@ pub fn get_package_count() -> Result<String> {
     #[cfg(target_os = "linux")]
     {
         // Try common Linux package managers
-        if let Ok(output) = Command::new("dpkg").args(&["-l"]).output() {
+        if let Ok(output) = Command::new("dpkg").args(["-l"]).output() {
             let count = String::from_utf8_lossy(&output.stdout)
                 .lines()
                 .filter(|line| line.starts_with("ii"))
@@ -92,14 +92,14 @@ pub fn get_package_count() -> Result<String> {
             }
         }
 
-        if let Ok(output) = Command::new("rpm").args(&["-qa"]).output() {
+        if let Ok(output) = Command::new("rpm").args(["-qa"]).output() {
             let count = String::from_utf8_lossy(&output.stdout).lines().count();
             if count > 0 {
                 return Ok(format!("{} (rpm)", count));
             }
         }
 
-        if let Ok(output) = Command::new("pacman").args(&["-Q"]).output() {
+        if let Ok(output) = Command::new("pacman").args(["-Q"]).output() {
             let count = String::from_utf8_lossy(&output.stdout).lines().count();
             if count > 0 {
                 return Ok(format!("{} (pacman)", count));
@@ -114,7 +114,7 @@ pub fn get_resolution() -> Result<String> {
     #[cfg(target_os = "macos")]
     {
         if let Ok(output) = Command::new("system_profiler")
-            .args(&["SPDisplaysDataType"])
+            .args(["SPDisplaysDataType"])
             .output()
         {
             let output_str = String::from_utf8_lossy(&output.stdout);
@@ -177,11 +177,11 @@ pub fn get_window_manager() -> Result<String> {
     #[cfg(target_os = "linux")]
     {
         // Check for common window managers
-        if let Ok(_) = env::var("GNOME_DESKTOP_SESSION_ID") {
+        if env::var("GNOME_DESKTOP_SESSION_ID").is_ok() {
             return Ok("Mutter".to_string());
         }
 
-        if let Ok(_) = env::var("KDE_FULL_SESSION") {
+        if env::var("KDE_FULL_SESSION").is_ok() {
             return Ok("KWin".to_string());
         }
 

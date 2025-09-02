@@ -41,7 +41,7 @@ impl Display {
             let info_lines: Vec<&str> = info_output.lines().collect();
 
             // First, output the image (it will render immediately)
-            output.push_str(&logo.trim_end());
+            output.push_str(logo.trim_end());
 
             // The image is rendered in character cells (30 wide x 15 tall)
             // We need to move the cursor up to the top of the image area
@@ -56,7 +56,7 @@ impl Display {
             for (i, line) in info_lines.iter().enumerate() {
                 if i > 0 {
                     // Move to next line but stay at the right position
-                    output.push_str("\n");
+                    output.push('\n');
                 }
                 // Move cursor to the right of the image
                 output.push_str(&format!("\x1b[{}C{}", image_width, line));
@@ -184,7 +184,7 @@ fn get_field_label(field: &str) -> String {
         _ => {
             let mut chars: Vec<char> = field.chars().collect();
             if !chars.is_empty() {
-                chars[0] = chars[0].to_uppercase().nth(0).unwrap_or(chars[0]);
+                chars[0] = chars[0].to_uppercase().next().unwrap_or(chars[0]);
             }
             chars.iter().collect::<String>().replace('_', " ")
         }

@@ -3,9 +3,9 @@ use std::process::Command;
 
 pub fn execute_custom_command(command: &str) -> Result<String> {
     let output = if cfg!(target_os = "windows") {
-        Command::new("cmd").args(&["/C", command]).output()?
+        Command::new("cmd").args(["/C", command]).output()?
     } else {
-        Command::new("sh").args(&["-c", command]).output()?
+        Command::new("sh").args(["-c", command]).output()?
     };
 
     if output.status.success() {

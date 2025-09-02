@@ -4,7 +4,7 @@ pub mod loader;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct Config {
     pub display: DisplayConfig,
     pub info: InfoConfig,
@@ -46,6 +46,12 @@ pub enum AsciiArtSource {
     Image,
     #[serde(rename = "none")]
     None,
+}
+
+impl Default for AsciiArtSource {
+    fn default() -> Self {
+        Self::Auto
+    }
 }
 
 impl Config {

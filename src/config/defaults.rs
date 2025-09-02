@@ -1,16 +1,6 @@
 use super::*;
 use std::collections::HashMap;
 
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            display: DisplayConfig::default(),
-            info: InfoConfig::default(),
-            ascii_art: AsciiArtConfig::default(),
-        }
-    }
-}
-
 impl Default for DisplayConfig {
     fn default() -> Self {
         let mut field_colors = HashMap::new();
