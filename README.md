@@ -22,6 +22,21 @@ cargo build --release
 cargo install --path .
 ```
 
+### Docker
+
+```bash
+# Build and run with docker-compose
+docker compose up --build
+
+# Run with different commands
+docker compose run --rm rice --help
+docker compose run --rm rice --version
+
+# Build and run directly
+docker build -t rice:local .
+docker run --rm rice:local
+```
+
 ### Requirements
 
 - **Rust 1.88+** (2021 edition)

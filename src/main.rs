@@ -1,8 +1,8 @@
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use anyhow::{Result, Context};
+use colored::Colorize;
 use serde::Serialize;
 use tracing::Level;
-use colored::Colorize;
 
 mod config;
 mod display;
@@ -51,7 +51,7 @@ enum Commands {
     Config,
     /// Show system information (legacy)
     System,
-    /// Show CPU information (legacy) 
+    /// Show CPU information (legacy)
     Cpu,
     /// Show memory information (legacy)
     Memory,
@@ -61,16 +61,14 @@ enum Commands {
     Network,
 }
 
-
-
 fn get_random_startup_message() -> &'static str {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
     use std::time::{SystemTime, UNIX_EPOCH};
-    
+
     let messages = [
         "Scanning system information",
-        "Gathering hardware details", 
+        "Gathering hardware details",
         "Collecting software inventory",
         "Analyzing system performance",
         "Reading configuration files",
@@ -80,17 +78,17 @@ fn get_random_startup_message() -> &'static str {
         "Calibrating sensors",
         "Establishing system baseline",
     ];
-    
+
     // Create a pseudo-random seed from current time
     let seed = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_nanos();
-    
+
     let mut hasher = DefaultHasher::new();
     seed.hash(&mut hasher);
     let hash = hasher.finish();
-    
+
     let index = (hash as usize) % messages.len();
     messages[index]
 }
@@ -99,10 +97,12 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     // Initialize logging
-    let level = if cli.verbose { Level::DEBUG } else { Level::INFO };
-    tracing_subscriber::fmt()
-        .with_max_level(level)
-        .init();
+    let level = if cli.verbose {
+        Level::DEBUG
+    } else {
+        Level::INFO
+    };
+    tracing_subscriber::fmt().with_max_level(level).init();
 
     // Add the random startup message as an info log
     tracing::info!("{}", get_random_startup_message());
@@ -111,17 +111,20 @@ fn main() -> Result<()> {
         Some(Commands::Config) => {
             generate_config()?;
             return Ok(());
-        },
-        Some(Commands::System) | Some(Commands::Cpu) | Some(Commands::Memory) | 
-        Some(Commands::Disk) | Some(Commands::Network) => {
+        }
+        Some(Commands::System)
+        | Some(Commands::Cpu)
+        | Some(Commands::Memory)
+        | Some(Commands::Disk)
+        | Some(Commands::Network) => {
             // Legacy mode - use old implementation for compatibility
             run_legacy_mode(&cli)?;
             return Ok(());
-        },
+        }
         Some(Commands::Show) | None => {
             // New modular mode
             run_modern_mode(&cli)?
-        },
+        }
     }
 
     Ok(())
@@ -130,33 +133,33 @@ fn main() -> Result<()> {
 fn run_modern_mode(cli: &Cli) -> Result<()> {
     // Load configuration
     let mut config = Config::load_from_path(cli.config.clone())?;
-    
+
     // Override config with CLI options
     if cli.no_logo {
         config.display.show_logo = false;
     }
-    
+
     if let Some(image_path) = &cli.image {
         config.ascii_art.source = crate::config::AsciiArtSource::Image;
         config.ascii_art.path = Some(image_path.clone());
     }
-    
+
     // Create info collector
     let collector = InfoCollector::new(
         config.info.fields.clone(),
         config.info.custom_commands.clone(),
     );
-    
+
     // Collect system information
     let info = collector.collect_all()?;
-    
+
     // Handle different output formats
     match cli.format.as_str() {
         "json" => {
-            let json = serde_json::to_string_pretty(&info)
-                .context("Failed to serialize info to JSON")?;
+            let json =
+                serde_json::to_string_pretty(&info).context("Failed to serialize info to JSON")?;
             println!("{}", json);
-        },
+        }
         _ => {
             // Use display engine for formatted output
             let display = Display::new(config);
@@ -164,14 +167,14 @@ fn run_modern_mode(cli: &Cli) -> Result<()> {
             println!("{}", output);
         }
     }
-    
+
     Ok(())
 }
 
 fn run_legacy_mode(cli: &Cli) -> Result<()> {
     // Keep the old implementation for backward compatibility
     use sysinfo::System;
-    
+
     let mut sys = System::new_all();
     sys.refresh_all();
 
@@ -183,14 +186,14 @@ fn run_legacy_mode(cli: &Cli) -> Result<()> {
         Some(Commands::Network) => show_network_info(&sys, &cli.format)?,
         _ => unreachable!(),
     }
-    
+
     Ok(())
 }
 
 fn generate_config() -> Result<()> {
     let config_path = crate::config::loader::get_config_path()?;
     let mut created = false;
-    
+
     if config_path.exists() {
         println!("Config file already exists at: {}", config_path.display());
     } else {
@@ -199,22 +202,25 @@ fn generate_config() -> Result<()> {
         println!("Created default config file at: {}", config_path.display());
         created = true;
     }
-    
+
     // Open config file in default editor
     println!("Opening config file in default editor...");
     if let Err(e) = open_in_editor(&config_path) {
         println!("Failed to open editor: {}", e);
         if created {
-            println!("You can manually edit the config file at: {}", config_path.display());
+            println!(
+                "You can manually edit the config file at: {}",
+                config_path.display()
+            );
         }
     }
-    
+
     Ok(())
 }
 
 fn open_in_editor(path: &std::path::Path) -> Result<()> {
     use std::process::Command;
-    
+
     // Try different editors based on platform and environment
     let editors = if cfg!(windows) {
         vec!["notepad"]
@@ -223,31 +229,31 @@ fn open_in_editor(path: &std::path::Path) -> Result<()> {
     } else {
         vec!["xdg-open", "code", "gedit", "nano", "vim"]
     };
-    
+
     // Check EDITOR environment variable first
     if let Ok(editor) = std::env::var("EDITOR") {
         let status = Command::new(&editor)
             .arg(path)
             .status()
             .with_context(|| format!("Failed to run editor: {}", editor))?;
-        
+
         if status.success() {
             return Ok(());
         }
     }
-    
+
     // Check VISUAL environment variable
     if let Ok(editor) = std::env::var("VISUAL") {
         let status = Command::new(&editor)
             .arg(path)
             .status()
             .with_context(|| format!("Failed to run editor: {}", editor))?;
-        
+
         if status.success() {
             return Ok(());
         }
     }
-    
+
     // Try default editors for the platform
     for editor in editors {
         if let Ok(status) = Command::new(editor).arg(path).status() {
@@ -256,15 +262,15 @@ fn open_in_editor(path: &std::path::Path) -> Result<()> {
             }
         }
     }
-    
+
     anyhow::bail!("No suitable editor found. Please set EDITOR or VISUAL environment variable.")
 }
 
 // Legacy system info display for backward compatibility
 fn show_system_info(sys: &sysinfo::System, format: &str) -> Result<()> {
-    use sysinfo::System;
     use colored::*;
-    
+    use sysinfo::System;
+
     #[derive(Serialize)]
     struct SystemInfo {
         os_name: String,
@@ -278,13 +284,23 @@ fn show_system_info(sys: &sysinfo::System, format: &str) -> Result<()> {
         cpu_frequency: u64,
         memory_usage_percent: f64,
     }
-    
+
     let cpus = sys.cpus();
-    let cpu_brand = if !cpus.is_empty() { cpus[0].brand().to_string() } else { "Unknown".to_string() };
-    let cpu_frequency = if !cpus.is_empty() { cpus[0].frequency() } else { 0 };
+    let cpu_brand = if !cpus.is_empty() {
+        cpus[0].brand().to_string()
+    } else {
+        "Unknown".to_string()
+    };
+    let cpu_frequency = if !cpus.is_empty() {
+        cpus[0].frequency()
+    } else {
+        0
+    };
     let memory_usage_percent = if sys.total_memory() > 0 {
         (sys.used_memory() as f64 / sys.total_memory() as f64) * 100.0
-    } else { 0.0 };
+    } else {
+        0.0
+    };
 
     let info = SystemInfo {
         os_name: System::name().unwrap_or_else(|| "Unknown".to_string()),
@@ -310,11 +326,24 @@ fn show_system_info(sys: &sysinfo::System, format: &str) -> Result<()> {
             println!("OS: {} {}", info.os_name.green(), info.os_version.yellow());
             println!("Hostname: {}", info.hostname.cyan());
             println!("Kernel: {}", info.kernel_version.magenta());
-            println!("CPU: {} @ {} MHz", info.cpu_brand.bright_green(), info.cpu_frequency.to_string().yellow());
+            println!(
+                "CPU: {} @ {} MHz",
+                info.cpu_brand.bright_green(),
+                info.cpu_frequency.to_string().yellow()
+            );
             println!("CPU Cores: {}", info.cpu_count.to_string().bright_green());
-            println!("Total Memory: {} MB", (info.total_memory / 1024 / 1024).to_string().bright_blue());
-            println!("Memory Usage: {}%", format!("{:.1}", info.memory_usage_percent).magenta());
-            println!("Uptime: {} seconds", info.uptime.to_string().bright_yellow());
+            println!(
+                "Total Memory: {} MB",
+                (info.total_memory / 1024 / 1024).to_string().bright_blue()
+            );
+            println!(
+                "Memory Usage: {}%",
+                format!("{:.1}", info.memory_usage_percent).magenta()
+            );
+            println!(
+                "Uptime: {} seconds",
+                info.uptime.to_string().bright_yellow()
+            );
         }
     }
 
@@ -325,14 +354,18 @@ fn show_cpu_info(sys: &sysinfo::System, format: &str) -> Result<()> {
     let cpus = sys.cpus();
 
     if format == "json" {
-        let cpu_data: Vec<serde_json::Value> = cpus.iter().enumerate().map(|(i, cpu)| {
-            serde_json::json!({
-                "core": i,
-                "usage": cpu.cpu_usage(),
-                "frequency": cpu.frequency(),
-                "brand": cpu.brand()
+        let cpu_data: Vec<serde_json::Value> = cpus
+            .iter()
+            .enumerate()
+            .map(|(i, cpu)| {
+                serde_json::json!({
+                    "core": i,
+                    "usage": cpu.cpu_usage(),
+                    "frequency": cpu.frequency(),
+                    "brand": cpu.brand()
+                })
             })
-        }).collect();
+            .collect();
 
         let json = serde_json::to_string_pretty(&cpu_data)
             .context("Failed to serialize CPU info to JSON")?;
@@ -340,7 +373,8 @@ fn show_cpu_info(sys: &sysinfo::System, format: &str) -> Result<()> {
     } else {
         println!("{}", "=== CPU Information ===".bold().blue());
         for (i, cpu) in cpus.iter().enumerate() {
-            println!("Core {}: {}% @ {} MHz - {}",
+            println!(
+                "Core {}: {}% @ {} MHz - {}",
                 i.to_string().bright_green(),
                 format!("{:.1}", cpu.cpu_usage()).yellow(),
                 cpu.frequency().to_string().cyan(),
@@ -371,9 +405,15 @@ fn show_memory_info(sys: &sysinfo::System, format: &str) -> Result<()> {
         println!("{}", json);
     } else {
         println!("{}", "=== Memory Information ===".bold().blue());
-        println!("Total: {} MB", (total / 1024 / 1024).to_string().bright_green());
+        println!(
+            "Total: {} MB",
+            (total / 1024 / 1024).to_string().bright_green()
+        );
         println!("Used: {} MB", (used / 1024 / 1024).to_string().red());
-        println!("Available: {} MB", (available / 1024 / 1024).to_string().cyan());
+        println!(
+            "Available: {} MB",
+            (available / 1024 / 1024).to_string().cyan()
+        );
         println!("Usage: {}%", format!("{:.1}", usage_percent).yellow());
 
         // Memory bar visualization
@@ -392,16 +432,19 @@ fn show_disk_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
     let disks = Disks::new_with_refreshed_list();
 
     if format == "json" {
-        let disk_data: Vec<serde_json::Value> = disks.iter().map(|disk| {
-            serde_json::json!({
-                "name": disk.name().to_string_lossy(),
-                "mount_point": disk.mount_point().to_string_lossy(),
-                "file_system": disk.file_system().to_string_lossy(),
-                "total_space_mb": disk.total_space() / 1024 / 1024,
-                "available_space_mb": disk.available_space() / 1024 / 1024,
-                "is_removable": disk.is_removable()
+        let disk_data: Vec<serde_json::Value> = disks
+            .iter()
+            .map(|disk| {
+                serde_json::json!({
+                    "name": disk.name().to_string_lossy(),
+                    "mount_point": disk.mount_point().to_string_lossy(),
+                    "file_system": disk.file_system().to_string_lossy(),
+                    "total_space_mb": disk.total_space() / 1024 / 1024,
+                    "available_space_mb": disk.available_space() / 1024 / 1024,
+                    "is_removable": disk.is_removable()
+                })
             })
-        }).collect();
+            .collect();
 
         let json = serde_json::to_string_pretty(&disk_data)
             .context("Failed to serialize disk info to JSON")?;
@@ -416,7 +459,10 @@ fn show_disk_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
 
             println!("Device: {}", disk.name().to_string_lossy().green());
             println!("  Mount: {}", disk.mount_point().to_string_lossy().cyan());
-            println!("  Filesystem: {}", disk.file_system().to_string_lossy().yellow());
+            println!(
+                "  Filesystem: {}",
+                disk.file_system().to_string_lossy().yellow()
+            );
             println!("  Total: {} GB", total_gb.to_string().bright_green());
             println!("  Used: {} GB", used_gb.to_string().red());
             println!("  Available: {} GB", available_gb.to_string().bright_blue());
@@ -444,17 +490,20 @@ fn show_network_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
     let networks = Networks::new_with_refreshed_list();
 
     if format == "json" {
-        let network_data: Vec<serde_json::Value> = networks.iter().map(|(name, data)| {
-            serde_json::json!({
-                "interface": name,
-                "received_mb": data.received() / 1024 / 1024,
-                "transmitted_mb": data.transmitted() / 1024 / 1024,
-                "packets_received": data.packets_received(),
-                "packets_transmitted": data.packets_transmitted(),
-                "errors_on_received": data.errors_on_received(),
-                "errors_on_transmitted": data.errors_on_transmitted()
+        let network_data: Vec<serde_json::Value> = networks
+            .iter()
+            .map(|(name, data)| {
+                serde_json::json!({
+                    "interface": name,
+                    "received_mb": data.received() / 1024 / 1024,
+                    "transmitted_mb": data.transmitted() / 1024 / 1024,
+                    "packets_received": data.packets_received(),
+                    "packets_transmitted": data.packets_transmitted(),
+                    "errors_on_received": data.errors_on_received(),
+                    "errors_on_transmitted": data.errors_on_transmitted()
+                })
             })
-        }).collect();
+            .collect();
 
         let json = serde_json::to_string_pretty(&network_data)
             .context("Failed to serialize network info to JSON")?;
@@ -463,16 +512,36 @@ fn show_network_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
         println!("{}", "=== Network Information ===".bold().blue());
         for (name, data) in &networks {
             println!("Interface: {}", name.green());
-            println!("  Received: {} MB", (data.received() / 1024 / 1024).to_string().bright_blue());
-            println!("  Transmitted: {} MB", (data.transmitted() / 1024 / 1024).to_string().bright_green());
-            println!("  Packets Received: {}", data.packets_received().to_string().cyan());
-            println!("  Packets Transmitted: {}", data.packets_transmitted().to_string().yellow());
+            println!(
+                "  Received: {} MB",
+                (data.received() / 1024 / 1024).to_string().bright_blue()
+            );
+            println!(
+                "  Transmitted: {} MB",
+                (data.transmitted() / 1024 / 1024)
+                    .to_string()
+                    .bright_green()
+            );
+            println!(
+                "  Packets Received: {}",
+                data.packets_received().to_string().cyan()
+            );
+            println!(
+                "  Packets Transmitted: {}",
+                data.packets_transmitted().to_string().yellow()
+            );
 
             if data.errors_on_received() > 0 {
-                println!("  Errors (RX): {}", data.errors_on_received().to_string().red());
+                println!(
+                    "  Errors (RX): {}",
+                    data.errors_on_received().to_string().red()
+                );
             }
             if data.errors_on_transmitted() > 0 {
-                println!("  Errors (TX): {}", data.errors_on_transmitted().to_string().red());
+                println!(
+                    "  Errors (TX): {}",
+                    data.errors_on_transmitted().to_string().red()
+                );
             }
             println!();
         }

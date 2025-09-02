@@ -28,7 +28,7 @@ impl Default for DisplayConfig {
         field_colors.insert("cpu".to_string(), "bright_green".to_string());
         field_colors.insert("memory".to_string(), "bright_blue".to_string());
         field_colors.insert("disk".to_string(), "bright_red".to_string());
-        
+
         Self {
             show_logo: true,
             color_values: true,
@@ -57,16 +57,15 @@ impl Default for InfoConfig {
             "disk".to_string(),
             "colors".to_string(),
         ];
-        
+
         let custom_commands = HashMap::new();
-        
+
         Self {
             fields,
             custom_commands,
         }
     }
 }
-
 
 impl Default for AsciiArtConfig {
     fn default() -> Self {

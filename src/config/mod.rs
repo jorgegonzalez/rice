@@ -26,7 +26,6 @@ pub struct InfoConfig {
     pub custom_commands: HashMap<String, String>,
 }
 
-
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AsciiArtConfig {
     pub source: AsciiArtSource,

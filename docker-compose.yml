@@ -1,0 +1,12 @@
+services:
+  rice:
+    build: .
+    container_name: rice-test
+    volumes:
+      # Mount host system info (read-only for security)
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    environment:
+      # Tell rice where to find host system info if needed
+      - HOST_PROC=/host/proc
+      - HOST_SYS=/host/sys
