@@ -16,8 +16,8 @@ use info::InfoCollector;
 #[derive(Parser)]
 #[command(name = "rice")]
 #[command(about = "A modern, configurable system information tool")]
-#[command(version)]
-#[command(propagate_version = true)]
+#[command(version = env!("CARGO_PKG_VERSION"))]
+#[command(disable_version_flag = true)]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -27,7 +27,7 @@ struct Cli {
     format: String,
 
     /// Enable verbose logging
-    #[arg(short, long)]
+    #[arg(long)]
     verbose: bool,
 
     /// Use custom config file
@@ -49,6 +49,8 @@ enum Commands {
     Show,
     /// Generate default config file
     Config,
+    /// Show version information
+    Version,
     /// Show system information (legacy)
     System,
     /// Show CPU information (legacy)
@@ -94,6 +96,15 @@ fn get_random_startup_message() -> &'static str {
 }
 
 fn main() -> Result<()> {
+    use clap::Parser;
+    
+    // Parse command line args manually to handle version flags
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() > 1 && (args[1] == "-v" || args[1] == "--version") {
+        println!("rice {}", env!("CARGO_PKG_VERSION"));
+        return Ok(());
+    }
+    
     let cli = Cli::parse();
 
     // Initialize logging
@@ -110,6 +121,10 @@ fn main() -> Result<()> {
     match cli.command {
         Some(Commands::Config) => {
             generate_config()?;
+            return Ok(());
+        }
+        Some(Commands::Version) => {
+            println!("rice {}", env!("CARGO_PKG_VERSION"));
             return Ok(());
         }
         Some(Commands::System)
