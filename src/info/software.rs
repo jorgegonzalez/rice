@@ -213,12 +213,9 @@ pub fn get_window_manager() -> Result<String> {
     #[cfg(target_os = "macos")]
     {
         // Check for common macOS window managers
-        if let Ok(output) = Command::new("ps")
-            .arg("-e")
-            .output()
-        {
+        if let Ok(output) = Command::new("ps").arg("-e").output() {
             let output_str = String::from_utf8_lossy(&output.stdout);
-            
+
             // Check for specific window managers in order of preference
             if output_str.contains("Rectangle") {
                 return Ok("Rectangle".to_string());
@@ -239,7 +236,7 @@ pub fn get_window_manager() -> Result<String> {
                 return Ok("Kwm".to_string());
             }
         }
-        
+
         // Default to Quartz Compositor if no other window manager is detected
         return Ok("Quartz Compositor".to_string());
     }
@@ -251,14 +248,14 @@ pub fn get_window_manager() -> Result<String> {
 pub fn get_terminal_font() -> Result<String> {
     // Get terminal info first to determine detection method
     let terminal = get_terminal_info()?;
-    
+
     match terminal.as_str() {
         "iTerm2" => {
             // Try a simpler approach for iTerm2 - just return a reasonable fallback for now
             // The full implementation would require parsing the complex plist structure
             return Ok("Monaco 12".to_string());
-        },
-        
+        }
+
         "Terminal" | "Apple_Terminal" => {
             // Use AppleScript to get Terminal font
             if let Ok(output) = Command::new("osascript")
@@ -283,8 +280,8 @@ pub fn get_terminal_font() -> Result<String> {
                     return Ok(font_name);
                 }
             }
-        },
-        
+        }
+
         _ => {
             // For other terminals or as fallback, try to get system monospace font
             #[cfg(target_os = "macos")]
@@ -303,7 +300,7 @@ pub fn get_terminal_font() -> Result<String> {
             }
         }
     }
-    
+
     // Fallback to Monaco which is common on macOS terminals
     Ok("Monaco 12".to_string())
 }

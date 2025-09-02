@@ -97,14 +97,14 @@ fn get_random_startup_message() -> &'static str {
 
 fn main() -> Result<()> {
     use clap::Parser;
-    
+
     // Parse command line args manually to handle version flags
     let args: Vec<String> = std::env::args().collect();
     if args.len() > 1 && (args[1] == "-v" || args[1] == "--version") {
         println!("rice {}", env!("CARGO_PKG_VERSION"));
         return Ok(());
     }
-    
+
     let cli = Cli::parse();
 
     // Load configuration early to check startup message setting
