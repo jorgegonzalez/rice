@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1](https://github.com/jorgegonzalez/rice/compare/v3.0.0...v3.0.1) - 2026-05-11
+
+### Other
+
+- dependency maintenance and CI/Docker housekeeping ([#3](https://github.com/jorgegonzalez/rice/pull/3))
+
 ## [3.0.0](https://github.com/jorgegonzalez/rice/compare/v2.0.0...v3.0.0) - 2025-09-02
 
 ### Added
