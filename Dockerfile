@@ -1,23 +1,26 @@
 # Use official Rust image as build environment
-FROM rust:latest as builder
+FROM rust:1.88-slim AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy Cargo.toml first for dependency caching
-COPY Cargo.toml ./
+# Copy manifests first for dependency caching
+COPY Cargo.toml Cargo.lock ./
 
-# Create a dummy main.rs to build dependencies
-RUN mkdir src && echo "fn main() {}" > src/main.rs
+# Create a dummy main.rs and lib.rs to build dependencies
+RUN mkdir src \
+    && echo "fn main() {}" > src/main.rs \
+    && echo "" > src/lib.rs
 
-# Build dependencies (this will generate a new Cargo.lock)
-RUN cargo build --release && rm -rf src target/release/deps/rice*
+# Build dependencies, then drop the dummy artifacts
+RUN cargo build --release --locked \
+    && rm -rf src target/release/deps/rice* target/release/rice*
 
 # Copy source code
 COPY src ./src
 
 # Build the actual application
-RUN cargo build --release
+RUN cargo build --release --locked
 
 # Runtime stage - use Ubuntu for better GLIBC compatibility  
 FROM ubuntu:24.04
