@@ -35,9 +35,10 @@ pub struct AsciiArtConfig {
     pub auto_detect: bool,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub enum AsciiArtSource {
     #[serde(rename = "auto")]
+    #[default]
     Auto,
     #[serde(rename = "builtin")]
     Builtin,
@@ -47,12 +48,6 @@ pub enum AsciiArtSource {
     Image,
     #[serde(rename = "none")]
     None,
-}
-
-impl Default for AsciiArtSource {
-    fn default() -> Self {
-        Self::Auto
-    }
 }
 
 impl Config {
