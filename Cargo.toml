@@ -3,6 +3,7 @@ name = "rice"
 version = "3.0.0"
 authors = ["Jorge Gonzalez <jorgegonzalez@users.noreply.github.com>"]
 edition = "2021"
+rust-version = "1.88"
 include = [
 	"src/**/*",
 	"Cargo.toml",
