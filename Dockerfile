@@ -1,5 +1,5 @@
 # Use official Rust image as build environment
-FROM rust:1.88-slim AS builder
+FROM rust:1.97.1-slim AS builder
 
 # Set working directory
 WORKDIR /app
