@@ -147,12 +147,12 @@ pub fn get_resolution() -> Result<String> {
 
             // Find primary display resolution
             for line in output_str.lines() {
-                if line.contains("primary") || line.contains("connected") {
-                    if let Some(resolution_part) = line.split_whitespace().find(|part| {
-                        part.contains("x") && part.chars().next().unwrap().is_numeric()
-                    }) {
-                        return Ok(resolution_part.to_string());
-                    }
+                if (line.contains("primary") || line.contains("connected"))
+                    && let Some(resolution_part) = line
+                        .split_whitespace()
+                        .find(|part| part.contains('x') && part.starts_with(char::is_numeric))
+                {
+                    return Ok(resolution_part.to_string());
                 }
             }
         }
@@ -202,10 +202,10 @@ pub fn get_window_manager() -> Result<String> {
             .output()
         {
             let output_str = String::from_utf8_lossy(&output.stdout);
-            if let Some(first_line) = output_str.lines().next() {
-                if let Some(wm_name) = first_line.split_whitespace().nth(1) {
-                    return Ok(wm_name.to_string());
-                }
+            if let Some(first_line) = output_str.lines().next()
+                && let Some(wm_name) = first_line.split_whitespace().nth(1)
+            {
+                return Ok(wm_name.to_string());
             }
         }
     }
