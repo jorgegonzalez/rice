@@ -3,21 +3,21 @@ use std::env;
 use std::process::Command;
 
 pub fn get_shell_info() -> Result<String> {
-    if let Ok(shell) = env::var("SHELL") {
-        if let Some(shell_name) = shell.split('/').next_back() {
-            // Try to get version
-            if let Ok(output) = Command::new(shell_name).arg("--version").output() {
-                let version_output = String::from_utf8_lossy(&output.stdout);
-                let first_line = version_output.lines().next().unwrap_or("");
+    if let Ok(shell) = env::var("SHELL")
+        && let Some(shell_name) = shell.split('/').next_back()
+    {
+        // Try to get version
+        if let Ok(output) = Command::new(shell_name).arg("--version").output() {
+            let version_output = String::from_utf8_lossy(&output.stdout);
+            let first_line = version_output.lines().next().unwrap_or("");
 
-                // Extract version info (simplified)
-                if !first_line.is_empty() {
-                    return Ok(first_line.to_string());
-                }
+            // Extract version info (simplified)
+            if !first_line.is_empty() {
+                return Ok(first_line.to_string());
             }
-
-            return Ok(shell_name.to_string());
         }
+
+        return Ok(shell_name.to_string());
     }
 
     Ok("Unknown".to_string())
@@ -131,10 +131,10 @@ pub fn get_resolution() -> Result<String> {
 
             // Parse resolution from system_profiler output (simplified)
             for line in output_str.lines() {
-                if line.contains("Resolution:") {
-                    if let Some(resolution) = line.split("Resolution:").nth(1) {
-                        return Ok(resolution.trim().to_string());
-                    }
+                if line.contains("Resolution:")
+                    && let Some(resolution) = line.split("Resolution:").nth(1)
+                {
+                    return Ok(resolution.trim().to_string());
                 }
             }
         }

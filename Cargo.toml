@@ -2,8 +2,8 @@
 name = "rice"
 version = "3.0.1"
 authors = ["Jorge Gonzalez <jorgegonzalez@users.noreply.github.com>"]
-edition = "2021"
-rust-version = "1.88"
+edition = "2024"
+rust-version = "1.100"
 include = [
 	"src/**/*",
 	"Cargo.toml",
@@ -11,7 +11,6 @@ include = [
 ]
 repository = "https://github.com/jorgegonzalez/rice"
 documentation = "https://github.com/jorgegonzalez/rice"
-homepage = "https://github.com/jorgegonzalez/rice"
 readme = "README.md"
 license = "MIT"
 description = "🍚 A modern, feature-rich system information tool written in Rust"
@@ -22,15 +21,15 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 clap = { version = "4.6", features = ["derive"] }
-sysinfo = { version = "0.38", features = ["serde"] }
+sysinfo = { version = "0.40", features = ["serde"] }
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 colored = "3.1"
 tracing = "0.1"
 tracing-subscriber = "0.3"
-toml = "1.1"
-dirs = "6.0"
+toml = "1.2"
+dirs = "7.0"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"], optional = true }
 base64 = { version = "0.23", optional = true }
 

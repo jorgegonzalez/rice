@@ -2,7 +2,7 @@ use anyhow::Result;
 use sysinfo::{Disks, System};
 
 pub fn get_cpu_info() -> Result<String> {
-    let mut sys = System::new();
+    let mut sys = System::new()?;
     sys.refresh_cpu_all();
 
     let cpus = sys.cpus();
@@ -26,7 +26,7 @@ pub fn get_cpu_info() -> Result<String> {
 }
 
 pub fn get_memory_info() -> Result<String> {
-    let mut sys = System::new_all();
+    let mut sys = System::new_all()?;
     sys.refresh_memory();
 
     let total = sys.total_memory();
@@ -42,7 +42,7 @@ pub fn get_memory_info() -> Result<String> {
 }
 
 pub fn get_disk_info() -> Result<String> {
-    let disks = Disks::new_with_refreshed_list();
+    let disks = Disks::new_with_refreshed_list()?;
 
     if disks.is_empty() {
         return Ok("No disks found".to_string());

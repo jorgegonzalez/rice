@@ -88,17 +88,17 @@ fn render_image_as_terminal(path: &str) -> Result<String> {
     use std::env;
 
     // Check if we're in iTerm2, which supports inline images
-    if let Ok(term_program) = env::var("TERM_PROGRAM") {
-        if term_program == "iTerm.app" {
-            return render_iterm2_image(path);
-        }
+    if let Ok(term_program) = env::var("TERM_PROGRAM")
+        && term_program == "iTerm.app"
+    {
+        return render_iterm2_image(path);
     }
 
     // Check if we're in Kitty, which has its own graphics protocol
-    if let Ok(term) = env::var("TERM") {
-        if term.contains("kitty") {
-            return render_kitty_image(path);
-        }
+    if let Ok(term) = env::var("TERM")
+        && term.contains("kitty")
+    {
+        return render_kitty_image(path);
     }
 
     // Fallback to ASCII art representation
@@ -107,7 +107,7 @@ fn render_image_as_terminal(path: &str) -> Result<String> {
 
 #[cfg(feature = "images")]
 fn render_iterm2_image(path: &str) -> Result<String> {
-    use base64::{engine::general_purpose, Engine as _};
+    use base64::{Engine as _, engine::general_purpose};
     use std::fs;
 
     // Read image file and encode as base64
@@ -141,7 +141,7 @@ fn render_iterm2_image(path: &str) -> Result<String> {
 
 #[cfg(feature = "images")]
 fn render_kitty_image(path: &str) -> Result<String> {
-    use base64::{engine::general_purpose, Engine as _};
+    use base64::{Engine as _, engine::general_purpose};
     use std::fs;
 
     let image_data =

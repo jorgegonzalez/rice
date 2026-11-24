@@ -192,7 +192,7 @@ fn run_legacy_mode(cli: &Cli) -> Result<()> {
     // Keep the old implementation for backward compatibility
     use sysinfo::System;
 
-    let mut sys = System::new_all();
+    let mut sys = System::new_all()?;
     sys.refresh_all();
 
     match cli.command {
@@ -273,10 +273,10 @@ fn open_in_editor(path: &std::path::Path) -> Result<()> {
 
     // Try default editors for the platform
     for editor in editors {
-        if let Ok(status) = Command::new(editor).arg(path).status() {
-            if status.success() {
-                return Ok(());
-            }
+        if let Ok(status) = Command::new(editor).arg(path).status()
+            && status.success()
+        {
+            return Ok(());
         }
     }
 
@@ -320,13 +320,13 @@ fn show_system_info(sys: &sysinfo::System, format: &str) -> Result<()> {
     };
 
     let info = SystemInfo {
-        os_name: System::name().unwrap_or_else(|| "Unknown".to_string()),
-        os_version: System::os_version().unwrap_or_else(|| "Unknown".to_string()),
-        hostname: System::host_name().unwrap_or_else(|| "Unknown".to_string()),
-        kernel_version: System::kernel_version().unwrap_or_else(|| "Unknown".to_string()),
+        os_name: System::name().unwrap_or_else(|_| "Unknown".to_string()),
+        os_version: System::os_version().unwrap_or_else(|_| "Unknown".to_string()),
+        hostname: System::host_name().unwrap_or_else(|_| "Unknown".to_string()),
+        kernel_version: System::kernel_version().unwrap_or_else(|_| "Unknown".to_string()),
         cpu_count: cpus.len(),
         total_memory: sys.total_memory(),
-        uptime: System::uptime(),
+        uptime: System::uptime().unwrap_or_default(),
         cpu_brand,
         cpu_frequency,
         memory_usage_percent,
@@ -377,7 +377,7 @@ fn show_cpu_info(sys: &sysinfo::System, format: &str) -> Result<()> {
             .map(|(i, cpu)| {
                 serde_json::json!({
                     "core": i,
-                    "usage": cpu.cpu_usage(),
+                    "usage": cpu.usage(),
                     "frequency": cpu.frequency(),
                     "brand": cpu.brand()
                 })
@@ -393,7 +393,7 @@ fn show_cpu_info(sys: &sysinfo::System, format: &str) -> Result<()> {
             println!(
                 "Core {}: {}% @ {} MHz - {}",
                 i.to_string().bright_green(),
-                format!("{:.1}", cpu.cpu_usage()).yellow(),
+                format!("{:.1}", cpu.usage()).yellow(),
                 cpu.frequency().to_string().cyan(),
                 cpu.brand().magenta()
             );
@@ -446,7 +446,7 @@ fn show_memory_info(sys: &sysinfo::System, format: &str) -> Result<()> {
 fn show_disk_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
     use sysinfo::Disks;
     // Try to access disk information through the new API
-    let disks = Disks::new_with_refreshed_list();
+    let disks = Disks::new_with_refreshed_list()?;
 
     if format == "json" {
         let disk_data: Vec<serde_json::Value> = disks
@@ -504,14 +504,14 @@ fn show_disk_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
 fn show_network_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
     use sysinfo::Networks;
     // Try to access network information through the new API
-    let networks = Networks::new_with_refreshed_list();
+    let networks = Networks::new_with_refreshed_list()?;
 
     if format == "json" {
         let network_data: Vec<serde_json::Value> = networks
             .iter()
             .map(|(name, data)| {
                 serde_json::json!({
-                    "interface": name,
+                    "interface": name.to_string_lossy(),
                     "received_mb": data.received() / 1024 / 1024,
                     "transmitted_mb": data.transmitted() / 1024 / 1024,
                     "packets_received": data.packets_received(),
@@ -528,7 +528,7 @@ fn show_network_info(_sys: &sysinfo::System, format: &str) -> Result<()> {
     } else {
         println!("{}", "=== Network Information ===".bold().blue());
         for (name, data) in &networks {
-            println!("Interface: {}", name.green());
+            println!("Interface: {}", name.to_string_lossy().green());
             println!(
                 "  Received: {} MB",
                 (data.received() / 1024 / 1024).to_string().bright_blue()

@@ -177,12 +177,12 @@ src/
 ## Dependencies
 
 ### Core Dependencies
-- `clap`: CLI argument parsing (v4.5)
-- `sysinfo`: Cross-platform system information (v0.37)
+- `clap`: CLI argument parsing (v4.6)
+- `sysinfo`: Cross-platform system information (v0.40)
 - `anyhow`: Error handling
 - `serde`: Configuration serialization
 - `toml`: TOML parsing
-- `colored`: Terminal colors (v3.0)
+- `colored`: Terminal colors (v3.1)
 - `tracing`: Logging
 - `dirs`: Cross-platform directory paths
 

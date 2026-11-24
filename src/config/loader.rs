@@ -1,4 +1,4 @@
-use super::{defaults::default_config_toml, Config};
+use super::{Config, defaults::default_config_toml};
 use anyhow::{Context, Result};
 use std::fs;
 use std::path::PathBuf;

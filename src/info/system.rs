@@ -5,8 +5,8 @@ use std::process::Command;
 use sysinfo::System;
 
 pub fn get_os_info() -> Result<String> {
-    let name = System::name().unwrap_or_else(|| "Unknown".to_string());
-    let version = System::os_version().unwrap_or_else(|| "Unknown".to_string());
+    let name = System::name().unwrap_or_else(|_| "Unknown".to_string());
+    let version = System::os_version().unwrap_or_else(|_| "Unknown".to_string());
 
     // Map Darwin to macOS for better user experience
     let display_name = match name.as_str() {
@@ -30,15 +30,15 @@ pub fn get_hostname() -> Result<String> {
     }
 
     // Fallback to regular hostname
-    Ok(System::host_name().unwrap_or_else(|| "Unknown".to_string()))
+    Ok(System::host_name().unwrap_or_else(|_| "Unknown".to_string()))
 }
 
 pub fn get_kernel_version() -> Result<String> {
-    Ok(System::kernel_version().unwrap_or_else(|| "Unknown".to_string()))
+    Ok(System::kernel_version().unwrap_or_else(|_| "Unknown".to_string()))
 }
 
 pub fn get_uptime() -> Result<String> {
-    let uptime_seconds = System::uptime();
+    let uptime_seconds = System::uptime()?;
     let days = uptime_seconds / (24 * 3600);
     let hours = (uptime_seconds % (24 * 3600)) / 3600;
     let minutes = (uptime_seconds % 3600) / 60;
@@ -57,7 +57,7 @@ pub fn get_userhost() -> Result<String> {
         .or_else(|_| env::var("USERNAME"))
         .unwrap_or_else(|_| "unknown".to_string());
 
-    let hostname = System::host_name().unwrap_or_else(|| "unknown".to_string());
+    let hostname = System::host_name().unwrap_or_else(|_| "unknown".to_string());
 
     Ok(format!("{}@{}", username, hostname))
 }

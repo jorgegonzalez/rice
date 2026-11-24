@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Rice is a neofetch-style system information CLI written in Rust (2021 edition, MSRV 1.88). Published to crates.io as `rice` and built as both a library (`src/lib.rs`) and a binary (`src/main.rs`).
+Rice is a neofetch-style system information CLI written in Rust (2024 edition, MSRV 1.100). Published to crates.io as `rice` and built as both a library (`src/lib.rs`) and a binary (`src/main.rs`).
 
 There is a more detailed `AGENTS.md` in the repo root that mirrors much of the architecture below — when editing architecture, keep both files in sync.
 

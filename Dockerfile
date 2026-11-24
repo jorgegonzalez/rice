@@ -1,5 +1,5 @@
 # Use official Rust image as build environment
-FROM rust:1.97.1-slim AS builder
+FROM rust:1.100.0-slim AS builder
 
 # Set working directory
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN mkdir src \
 
 # Build dependencies, then drop the dummy artifacts
 RUN cargo build --release --locked \
-    && rm -rf src target/release/deps/rice* target/release/rice*
+    && cargo clean --release -p rice
 
 # Copy source code
 COPY src ./src
@@ -23,7 +23,7 @@ COPY src ./src
 RUN cargo build --release --locked
 
 # Runtime stage - use Ubuntu for better GLIBC compatibility  
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \

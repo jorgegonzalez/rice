@@ -41,7 +41,7 @@ docker run --rm rice:local
 
 ### Requirements
 
-- **Rust 1.88+** (2021 edition)
+- **Rust 1.100+** (2024 edition)
 - **Platform**: macOS, Linux, or Windows
 
 ## Usage
